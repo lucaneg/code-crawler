@@ -50,7 +50,7 @@ topics =
 created = 
 pushed = 
 '''
-        with open(os.path.join(self.workdir, 'crawler.conf.template'), 'w') as f:
+        with open(self.make_file('crawler.conf.template'), 'w') as f:
             f.write(template)
         
     def read_conf(self, config):
@@ -164,16 +164,13 @@ pushed =
 
             if self.crawler_clone:
                 print('  cloning...', flush = True)
-                Repo.clone_from(repo['clone_url'], os.path.join(self.workdir, repo['full_name']))
+                Repo.clone_from(repo['clone_url'], self.make_file(repo['full_name']))
 
             if self.crawler_zip:
                 print('  downloading...', flush = True)
                 zip_url = 'https://github.com/' + repo['full_name'] + '/archive/master.zip'
                 zip_response = requests.get(zip_url, stream = True)
-                full_path = os.path.join(self.workdir, repo['full_name'].split('/')[0])
-                if not os.path.exists(full_path):
-                    os.makedirs(full_path)
-                with open(os.path.join(self.workdir, repo['full_name'] + '.zip'), 'wb') as handle:
+                with open(self.make_file(repo['full_name'] + '.zip'), 'wb') as handle:
                     for data in tqdm(zip_response.iter_content()):
                         handle.write(data)
 

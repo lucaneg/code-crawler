@@ -7,15 +7,25 @@ class Crawler:
         self.workdir = workdir
         self.needs_config = needs_config
         
-        if os.path.isdir(self.workdir):
-            ans = input('Caution: selected warning directory \'' + self.workdir + '\' already exists, delete it? [y/n] ')
+    def make_file(self, path):
+        if not os.path.isdir(self.workdir):
+            os.makedirs(self.workdir)
+            
+        target = os.path.join(self.workdir, path)
+        if os.path.exists(target):
+            ans = input('\'' + target + '\' already exists, delete it? [y/n] ')
             if ans.lower() == 'y' or ans.lower() == 'yes':
-                shutil.rmtree(self.workdir, ignore_errors = True)
+                if os.path.isdir(target) and not os.path.islink(target):
+                    shutil.rmtree(target)
+                else:
+                    os.remove(target)
             else:
-                print('Cannot continue: workdir alreay exists and answer was: ' + ans)
+                print('Aborting...')
                 exit()
-                
-        os.makedirs(self.workdir)
+        else:
+            os.makedirs(os.path.dirname(target), exist_ok = True)
+           
+        return target
         
     def read_conf(self, config):
         raise Exception('No read_conf method provided by ' + type(self).__name__)
