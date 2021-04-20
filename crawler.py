@@ -67,3 +67,5 @@ if __name__ == "__main__":
             raise Exception(args.config + ' does not exist')
             
         crawler.crawl()
+        
+    print('Crawling completed') 

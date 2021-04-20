@@ -4,7 +4,7 @@ import requests
 import json
 import os
 from distutils.util import strtobool
-from git import Repo
+import git
 from tqdm import tqdm
 
 class GitHubCrawler(base.Crawler):
@@ -159,18 +159,32 @@ pushed =
             else:
                 next_page = False
                 
+        class Progress(git.remote.RemoteProgress):
+            def update(self, op_code, cur_count, max_count=None, message=''):
+                msg = '  cloning: ' + self._cur_line
+                last_msg_len = 0
+                if hasattr(self, 'last_msg_len'):
+                    last_msg_len = self.last_msg_len
+                
+                self.last_msg_len = len(msg)
+                if len(msg) < last_msg_len:
+                    msg += ' ' * (last_msg_len - len(msg) + 2)
+                print(msg + '\r', end='', flush = True)
+        
         for repo in repos:
             print('- ' + repo['full_name'], flush = True)
 
             if self.crawler_clone:
-                print('  cloning...', flush = True)
-                Repo.clone_from(repo['clone_url'], self.make_file(repo['full_name']))
+                print('  cloning...', end='', flush = True)
+                git.Repo.clone_from(repo['clone_url'], self.make_file(repo['full_name']), progress=Progress())
+                print()
 
             if self.crawler_zip:
-                print('  downloading...', flush = True)
+                print('  downloading...', end="", flush = True)
                 zip_url = 'https://github.com/' + repo['full_name'] + '/archive/master.zip'
                 zip_response = requests.get(zip_url, stream = True)
                 with open(self.make_file(repo['full_name'] + '.zip'), 'wb') as handle:
-                    for data in tqdm(zip_response.iter_content()):
+                    for data in tqdm(zip_response.iter_content(), ascii=True, desc="  downloading"):
                         handle.write(data)
+                       
 
