@@ -4,7 +4,7 @@ A python crawler to download code from various sources to easily build test sets
 
 ## Setup
 - **python3**
-- additional python packages to install through `pip3 install`: `requests`, `configparser`, `tqdm`, `gitpython`
+- additional python packages to install through `pip3 install`: `requests`, `configparser`, `tqdm`, `gitpython`, `BeautifulSoup4`
 
 ## Run
 

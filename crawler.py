@@ -1,27 +1,23 @@
-def init_crawler(action, limit, workdir):
-    from crawlers.github import GitHubCrawler
-    
-    crawlers = {
-        'github' : GitHubCrawler(limit, workdir),
-    }
-    
-    if not action in crawlers:
-        raise Exception('Unknown crawler: ' + action)
-       
-    return crawlers[action]
-
 if __name__ == "__main__":
     import argparse
     import configparser
     import os
     
-    available_crawlers = ['github']
+    from crawlers.github import GitHubCrawler
+    from crawlers.mvn_rand import MvnRandom
+    
+    crawlers = {
+        'github' : lambda limit, workdir : GitHubCrawler(limit, workdir),
+        'mvn-rand' : lambda limit, workdir : MvnRandom(limit, workdir),
+    }
+    
+    available_crawlers = crawlers.keys()
 
     parser = argparse.ArgumentParser(description = 'Code crawler: retrieveing code for constructing test sets')
     parser.add_argument('crawler', 
                         metavar = 'crawler', 
                         type = str, 
-                        help = 'the name of the crawler, one of: ' + str(available_crawlers), 
+                        help = 'the name of the crawler, one of: ' + ', '.join(available_crawlers), 
                         choices = available_crawlers
                         )
     parser.add_argument("-c", 
@@ -53,19 +49,28 @@ if __name__ == "__main__":
                         )
     
     args = parser.parse_args()
-    crawler = init_crawler(args.crawler, args.limit, args.workdir)
     
+    if not args.crawler in available_crawlers:
+        raise Exception('Unknown crawler: ' + action)
+        
+    crawler = crawlers[args.crawler](args.limit, args.workdir)
 
     if args.config_template:
-        crawler.dump_conf_template()
-    else:
+        if crawler.requires_config():
+            template_loc = crawler.dump_conf_template()
+            print('Configuration template dumped to: ' + template_loc)
+        else:
+            print('Crawler ' + args.crawler + ' does not need a configuration')
+        exit()
+    
+    if crawler.requires_config():
         if os.path.isfile(args.config):
             config = configparser.ConfigParser()
             config.read(args.config)
             crawler.read_conf(config)
-        elif crawler.requires_config():
+        else:
             raise Exception(args.config + ' does not exist')
-            
-        crawler.crawl()
         
+    crawler.crawl()
+    
     print('Crawling completed') 

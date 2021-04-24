@@ -50,8 +50,11 @@ topics =
 created = 
 pushed = 
 '''
-        with open(self.make_file('crawler.conf.template'), 'w') as f:
+        template_loc = self.make_file('crawler.conf.template')
+        with open(template_loc, 'w') as f:
             f.write(template)
+            
+        return template_loc
         
     def read_conf(self, config):
         self.crawler_user = config['crawler']['user']
@@ -169,22 +172,22 @@ pushed =
                 self.last_msg_len = len(msg)
                 if len(msg) < last_msg_len:
                     msg += ' ' * (last_msg_len - len(msg) + 2)
-                print(msg + '\r', end='', flush = True)
+                print(msg + '\r', end = '', flush = True)
         
         for repo in repos:
             print('- ' + repo['full_name'], flush = True)
 
             if self.crawler_clone:
-                print('  cloning...', end='', flush = True)
+                print('  cloning...', end = '', flush = True)
                 git.Repo.clone_from(repo['clone_url'], self.make_file(repo['full_name']), progress=Progress())
-                print()
+                print('', flush = True)
 
             if self.crawler_zip:
-                print('  downloading...', end="", flush = True)
+                print('  downloading...', end = '', flush = True)
                 zip_url = 'https://github.com/' + repo['full_name'] + '/archive/master.zip'
                 zip_response = requests.get(zip_url, stream = True)
                 with open(self.make_file(repo['full_name'] + '.zip'), 'wb') as handle:
-                    for data in tqdm(zip_response.iter_content(), ascii=True, desc="  downloading"):
+                    for data in tqdm(zip_response.iter_content(), ascii = True, desc='  downloading'):
                         handle.write(data)
                        
 
