@@ -1,3 +1,4 @@
 *.conf
 crawl_result
 __pycache__
+requirements.txt

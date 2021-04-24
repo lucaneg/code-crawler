@@ -1,10 +1,11 @@
+import argparse
+import configparser
+import os
+
+from crawlers.github import GitHubCrawler
+from crawlers.mvn_rand import MvnRandom
+
 if __name__ == "__main__":
-    import argparse
-    import configparser
-    import os
-    
-    from crawlers.github import GitHubCrawler
-    from crawlers.mvn_rand import MvnRandom
     
     crawlers = {
         'github' : lambda limit, workdir : GitHubCrawler(limit, workdir),
