@@ -48,6 +48,27 @@ if __name__ == "__main__":
                         default = False,
                         action = 'store_true'
                         )
+    parser.add_argument("-f", 
+                        "--filter-files", 
+                        metavar = 'filter',
+                        type = str,
+                        help = "comma separated list of globs (fnmatch style) for filtering crawled files in each crawled result for subsequent --fexec (if no --fexec is provided, this option is useless) - wrap them in double quotes to avoid glob expansion in your terminal",
+                        default = "",
+                        )
+    parser.add_argument("-e", 
+                        "--exec", 
+                        metavar = 'command',
+                        type = str,
+                        help = "command to execute on each crawled result (absolute path to the result - file or folder - will be appendend at the end of the command)",
+                        default = "",
+                        )
+    parser.add_argument("-x", 
+                        "--fexec", 
+                        metavar = 'command',
+                        type = str,
+                        help = "command to execute on each file (optionally filtered with --filter-files) inside each crawled result (absolute path to the result - file or folder - will be appendend at the end of the command)",
+                        default = "",
+                        )
     
     args = parser.parse_args()
     
@@ -72,6 +93,40 @@ if __name__ == "__main__":
         else:
             raise Exception(args.config + ' does not exist')
         
-    crawler.crawl()
+    result = crawler.crawl()
     
     print('Crawling completed') 
+    
+    import fnmatch
+    def any_match(path, filters):
+        for f in filters:
+            if fnmatch.fnmatch(path, f):
+                return True
+        return False
+        
+    def normalize(path):
+        return os.path.abspath(os.path.normpath(crawled))
+    
+    if args.exec:
+        print('Executing "' + args.exec + '" on all clrawled result') 
+        for crawled in result:
+            print(normalize(crawled))
+    elif args.fexec:
+        files = []
+        for crawled in result:
+            if os.path.isdir(crawled):
+                for dirpath, subdirs, filelist in os.walk(crawled):
+                    for name in filelist:
+                        files.append(normalize(os.path.join(dirpath, name)))
+            else: 
+                files.append(normalize(crawled))
+        if args.filter_files:
+            filters = args.filter_files.split(',')
+            print('Executing "' + args.fexec + '" on individual clrawled files that match one of "' + str(filters) + '"') 
+            for file in files:
+                if any_match(file, filters):
+                    print(file)
+        else:
+            print('Executing "' + args.fexec + '" on all individual clrawled files') 
+            for file in files:
+                print(file)

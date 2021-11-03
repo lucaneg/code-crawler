@@ -81,11 +81,16 @@ class MvnRandom(base.Crawler):
             to_crawl[jar_name] = jar_url
         print()
         
+        result = []
         for jar_name, jar_url in to_crawl.items():
             print('- ' + jar_name, end = '', flush = True)
             zip_response = requests.get(jar_url, stream = True)
-            with open(self.make_file(jar_name), 'wb') as handle:
+            target = self.make_file(jar_name)
+            with open(target, 'wb') as handle:
                 for data in tqdm(zip_response.iter_content(), ascii = True, desc='  downloading'):
                     handle.write(data)
-            print()
+            result.append(target)
+            print("", flush = True)
+            
+        return result
 
