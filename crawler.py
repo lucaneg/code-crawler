@@ -120,6 +120,7 @@ if __name__ == "__main__":
         print('Executing "' + args.exec + '" on all clrawled result', flush = True) 
         for crawled in result:
             execute(args.exec, normalize(crawled))
+        print('Execution completed', flush = True)
     elif args.fexec:
         files = []
         for crawled in result:
@@ -139,3 +140,4 @@ if __name__ == "__main__":
             print('Executing "' + args.fexec + '" on all individual clrawled files', flush = True) 
             for file in files:
                 execute(args.fexec, normalize(file))
+        print('Execution completed', flush = True)
