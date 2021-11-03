@@ -95,7 +95,7 @@ if __name__ == "__main__":
         
     result = crawler.crawl()
     
-    print('Crawling completed') 
+    print('Crawling completed', flush = True) 
     
     import fnmatch
     def any_match(path, filters):
@@ -108,9 +108,9 @@ if __name__ == "__main__":
         return os.path.abspath(os.path.normpath(crawled))
     
     if args.exec:
-        print('Executing "' + args.exec + '" on all clrawled result') 
+        print('Executing "' + args.exec + '" on all clrawled result', flush = True) 
         for crawled in result:
-            print(normalize(crawled))
+            os.system(args.exec + ' ' + normalize(crawled))
     elif args.fexec:
         files = []
         for crawled in result:
@@ -122,11 +122,11 @@ if __name__ == "__main__":
                 files.append(normalize(crawled))
         if args.filter_files:
             filters = args.filter_files.split(',')
-            print('Executing "' + args.fexec + '" on individual clrawled files that match one of "' + str(filters) + '"') 
+            print('Executing "' + args.fexec + '" on individual clrawled files that match one of "' + str(filters) + '"', flush = True) 
             for file in files:
                 if any_match(file, filters):
-                    print(file)
+                    os.system(args.fexec + ' ' + normalize(file))
         else:
-            print('Executing "' + args.fexec + '" on all individual clrawled files') 
+            print('Executing "' + args.fexec + '" on all individual clrawled files', flush = True) 
             for file in files:
-                print(file)
+                os.system(args.fexec + ' ' + normalize(file))
