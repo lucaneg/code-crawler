@@ -17,7 +17,7 @@ A python crawler to download code from various sources to easily build test sets
 The only mandatory parameter is the name of the crawler. The available crawlers can be displayed through the help message:
 
 ```
-$ python crawler.py -h
+$ python crawler.py github -h
 usage: crawler.py [-h] [-c path] [-l n] [-d path] [-t] [-f filter]
                   [-e command] [-x command]
                   crawler
@@ -47,14 +47,16 @@ optional arguments:
                         option is useless) - wrap them in double quotes to
                         avoid glob expansion in your terminal
   -e command, --exec command
-                        command to execute on each crawled result (absolute
-                        path to the result - file or folder - will be
-                        appendend at the end of the command)
+                        command to execute on each crawled result; absolute
+                        path to the result - file or folder - will be replaced
+                        to all occurrences of '{}', or appendend at the end of
+                        the command if no occurrence is found
   -x command, --fexec command
                         command to execute on each file (optionally filtered
-                        with --filter-files) inside each crawled result
-                        (absolute path to the result - file or folder - will
-                        be appendend at the end of the command)
+                        with --filter-files) inside each crawled result;
+                        absolute path to the result - file or folder - will be
+                        replaced to all occurrences of '{}', or appendend at
+                        the end of the command if no occurrence is found
 ```
 
 Other options are used to tune general parameters that are not crawler-dependent: the working directory, the maximum number of results and the path to the crawler configuration.

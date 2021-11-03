@@ -1,10 +1,29 @@
 import argparse
 import configparser
 import os
+import fnmatch
 
 from crawlers.github import GitHubCrawler
 from crawlers.mvn_rand import MvnRandom
 
+def any_match(path, filters):
+    for f in filters:
+        if fnmatch.fnmatch(path, f):
+            return True
+    return False
+    
+def normalize(path):
+    return os.path.abspath(os.path.normpath(path))
+   
+def execute(cmd, param):
+    pos = cmd.find('{}')
+    if pos == -1:
+        full = cmd + ' ' + param
+    else:
+        full = cmd.replace('{}', param)
+    print('- executing: ' + full, flush = True)
+    os.system(full)
+    
 if __name__ == "__main__":
     
     crawlers = {
@@ -59,14 +78,14 @@ if __name__ == "__main__":
                         "--exec", 
                         metavar = 'command',
                         type = str,
-                        help = "command to execute on each crawled result (absolute path to the result - file or folder - will be appendend at the end of the command)",
+                        help = "command to execute on each crawled result; absolute path to the result - file or folder - will be replaced to all occurrences of '{}', or appendend at the end of the command if no occurrence is found",
                         default = "",
                         )
     parser.add_argument("-x", 
                         "--fexec", 
                         metavar = 'command',
                         type = str,
-                        help = "command to execute on each file (optionally filtered with --filter-files) inside each crawled result (absolute path to the result - file or folder - will be appendend at the end of the command)",
+                        help = "command to execute on each file (optionally filtered with --filter-files) inside each crawled result; absolute path to the result - file or folder - will be replaced to all occurrences of '{}', or appendend at the end of the command if no occurrence is found",
                         default = "",
                         )
     
@@ -97,20 +116,10 @@ if __name__ == "__main__":
     
     print('Crawling completed', flush = True) 
     
-    import fnmatch
-    def any_match(path, filters):
-        for f in filters:
-            if fnmatch.fnmatch(path, f):
-                return True
-        return False
-        
-    def normalize(path):
-        return os.path.abspath(os.path.normpath(crawled))
-    
     if args.exec:
         print('Executing "' + args.exec + '" on all clrawled result', flush = True) 
         for crawled in result:
-            os.system(args.exec + ' ' + normalize(crawled))
+            execute(args.exec, normalize(crawled))
     elif args.fexec:
         files = []
         for crawled in result:
@@ -125,8 +134,8 @@ if __name__ == "__main__":
             print('Executing "' + args.fexec + '" on individual clrawled files that match one of "' + str(filters) + '"', flush = True) 
             for file in files:
                 if any_match(file, filters):
-                    os.system(args.fexec + ' ' + normalize(file))
+                    execute(args.fexec, normalize(file))
         else:
             print('Executing "' + args.fexec + '" on all individual clrawled files', flush = True) 
             for file in files:
-                os.system(args.fexec + ' ' + normalize(file))
+                execute(args.fexec, normalize(file))

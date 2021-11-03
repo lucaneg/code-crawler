@@ -148,9 +148,9 @@ pushed =
 
         repos = list()
         next_page = True
-        while next_page and len(repos) <= to_crawl:
+        while next_page and len(repos) < to_crawl:
             for repo in result['items']:
-                if len(repos) <= to_crawl:
+                if len(repos) < to_crawl:
                     repos.append(repo)
                 else: 
                     break
