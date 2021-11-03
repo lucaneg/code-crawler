@@ -27,8 +27,8 @@ def execute(cmd, param):
 if __name__ == "__main__":
     
     crawlers = {
-        'github' : lambda limit, workdir : GitHubCrawler(limit, workdir),
-        'mvn-rand' : lambda limit, workdir : MvnRandom(limit, workdir),
+        'github' : lambda limit, workdir, skip_existing : GitHubCrawler(limit, workdir, skip_existing),
+        'mvn-rand' : lambda limit, workdir, skip_existing : MvnRandom(limit, workdir, skip_existing),
     }
     
     available_crawlers = crawlers.keys()
@@ -60,6 +60,12 @@ if __name__ == "__main__":
                         type = str, 
                         help = "path to the working directory, defaults to 'crawl_result'", 
                         default = 'crawl_result'
+                        )
+    parser.add_argument("-s", 
+                        "--skip-existing", 
+                        default = False, 
+                        help = "when retrieving a crawled result, skip the retrieval it if it already exists in the workdir, but still consider it a crawled item (useful to avoid retrieving the same item in subsequent executions)", 
+                        action = 'store_true'
                         )
     parser.add_argument("-t", 
                         "--config-template", 
@@ -94,7 +100,7 @@ if __name__ == "__main__":
     if not args.crawler in available_crawlers:
         raise Exception('Unknown crawler: ' + action)
         
-    crawler = crawlers[args.crawler](args.limit, args.workdir)
+    crawler = crawlers[args.crawler](args.limit, args.workdir, args.skip_existing)
 
     if args.config_template:
         if crawler.requires_config():

@@ -6,8 +6,8 @@ import random
 from tqdm import tqdm
 
 class MvnRandom(base.Crawler):
-    def __init__(self, limit, workdir):
-        super().__init__(limit, workdir, False)
+    def __init__(self, limit, workdir, skip_existing):
+        super().__init__(limit, workdir, False, skip_existing)
 
         # this the full maven repository
         self.mvn_base = 'https://repo1.maven.org/maven2/'
@@ -79,16 +79,19 @@ class MvnRandom(base.Crawler):
             base_url = random.choice(self.sources)
             jar_name, jar_url = self.get_jar_url(base_url)
             to_crawl[jar_name] = jar_url
-        print()
+        print("", flush = True)
         
         result = []
         for jar_name, jar_url in to_crawl.items():
-            print('- ' + jar_name, end = '', flush = True)
-            zip_response = requests.get(jar_url, stream = True)
-            target = self.make_file(jar_name)
-            with open(target, 'wb') as handle:
-                for data in tqdm(zip_response.iter_content(), ascii = True, desc='  downloading'):
-                    handle.write(data)
+            if self.exists(jar_name) and self.skip_existing:
+                target = self.get_path(jar_name)
+            else:
+                print('- ' + jar_name, end = '', flush = True)
+                zip_response = requests.get(jar_url, stream = True)
+                target = self.make_file(jar_name)
+                with open(target, 'wb') as handle:
+                    for data in tqdm(zip_response.iter_content(), ascii = True, desc='  downloading'):
+                        handle.write(data)
             result.append(target)
             print("", flush = True)
             

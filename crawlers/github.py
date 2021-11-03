@@ -8,8 +8,8 @@ import git
 from tqdm import tqdm
 
 class GitHubCrawler(base.Crawler):
-    def __init__(self, limit, workdir):
-        super().__init__(limit, workdir, True)
+    def __init__(self, limit, workdir, skip_existing):
+        super().__init__(limit, workdir, True, skip_existing)
         
     def dump_conf_template(self):
         template = '''[crawler]
@@ -179,20 +179,28 @@ pushed =
             print('- ' + repo['full_name'], flush = True)
 
             if self.crawler_clone:
-                print('  cloning...', end = '', flush = True)
-                target = self.make_file(repo['full_name'])
-                git.Repo.clone_from(repo['clone_url'], target, progress=Progress())
-                print('', flush = True)
+                crawl_target = repo['full_name']
+                if self.exists(crawl_target) and self.skip_existing:
+                    target = self.get_path(crawl_target)
+                else:
+                    print('  cloning...', end = '', flush = True)
+                    target = self.make_file(crawl_target)
+                    git.Repo.clone_from(repo['clone_url'], target, progress=Progress())
+                    print('', flush = True)
                 result.append(target)
 
             if self.crawler_zip:
-                print('  downloading...', end = '', flush = True)
-                zip_url = 'https://github.com/' + repo['full_name'] + '/archive/master.zip'
-                zip_response = requests.get(zip_url, stream = True)
-                target = self.make_file(repo['full_name'] + '.zip')
-                with open(target, 'wb') as handle:
-                    for data in tqdm(zip_response.iter_content(), ascii = True, desc='  downloading'):
-                        handle.write(data)
+                crawl_target = repo['full_name'] + '.zip'
+                if self.exists(crawl_target) and self.skip_existing:
+                    target = self.get_path(crawl_target)
+                else:
+                    print('  downloading...', end = '', flush = True)
+                    zip_url = 'https://github.com/' + repo['full_name'] + '/archive/master.zip'
+                    zip_response = requests.get(zip_url, stream = True)
+                    target = self.make_file(crawl_target)
+                    with open(target, 'wb') as handle:
+                        for data in tqdm(zip_response.iter_content(), ascii = True, desc='  downloading'):
+                            handle.write(data)
                 result.append(target)
         
         return result

@@ -17,8 +17,8 @@ A python crawler to download code from various sources to easily build test sets
 The only mandatory parameter is the name of the crawler. The available crawlers can be displayed through the help message:
 
 ```
-$ python crawler.py github -h
-usage: crawler.py [-h] [-c path] [-l n] [-d path] [-t] [-f filter]
+$ python crawler.py -h
+usage: crawler.py [-h] [-c path] [-l n] [-d path] [-s] [-t] [-f filter]
                   [-e command] [-x command]
                   crawler
 
@@ -36,6 +36,10 @@ optional arguments:
   -d path, --workdir path
                         path to the working directory, defaults to
                         'crawl_result'
+  -s, --skip-existing   when retrieving a crawled result, skip the retrieval
+                        it if it already exists in the workdir, but still
+                        consider it a crawled item (useful to avoid retrieving
+                        the same item in subsequent executions)
   -t, --config-template
                         instead of executing, dump the configuration template
                         for the given crawler to
