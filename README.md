@@ -18,12 +18,14 @@ The only mandatory parameter is the name of the crawler. The available crawlers 
 
 ```
 $ python crawler.py -h
-usage: crawler.py [-h] [-c path] [-l n] [-d path] [-t] crawler
+usage: crawler.py [-h] [-c path] [-l n] [-d path] [-t] [-f filter]
+                  [-e command] [-x command]
+                  crawler
 
 Code crawler: retrieveing code for constructing test sets
 
 positional arguments:
-  crawler               the name of the crawler, one of: <available crawlers>
+  crawler               the name of the crawler, one of: github, mvn-rand
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -38,9 +40,26 @@ optional arguments:
                         instead of executing, dump the configuration template
                         for the given crawler to
                         <workdir>/crawler.conf.template
+  -f filter, --filter-files filter
+                        comma separated list of globs (fnmatch style) for
+                        filtering crawled files in each crawled result for
+                        subsequent --fexec (if no --fexec is provided, this
+                        option is useless) - wrap them in double quotes to
+                        avoid glob expansion in your terminal
+  -e command, --exec command
+                        command to execute on each crawled result (absolute
+                        path to the result - file or folder - will be
+                        appendend at the end of the command)
+  -x command, --fexec command
+                        command to execute on each file (optionally filtered
+                        with --filter-files) inside each crawled result
+                        (absolute path to the result - file or folder - will
+                        be appendend at the end of the command)
 ```
 
 Other options are used to tune general parameters that are not crawler-dependent: the working directory, the maximum number of results and the path to the crawler configuration.
+
+Glob matching is performed through [fnmatch](https://docs.python.org/3/library/fnmatch.html#module-fnmatch).
 
 ### Crawler-specific configuration
 
