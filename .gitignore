@@ -1,4 +1,5 @@
 *.conf
 crawl_result
+runners
 __pycache__
 requirements.txt

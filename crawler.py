@@ -2,6 +2,7 @@ import argparse
 import configparser
 import os
 import fnmatch
+import subprocess
 
 from crawlers.github import GitHubCrawler
 from crawlers.mvn_rand import MvnRandom
@@ -22,7 +23,23 @@ def execute(cmd, param):
     else:
         full = cmd.replace('{}', param)
     print('- executing: ' + full, flush = True)
-    os.system(full)
+    proc = subprocess.run(full)
+    return proc.returncode == 0
+    
+def iterate(cmd, items_label, items, filtering = None):
+    print('Executing "' + cmd + '" on ' + items_label, flush = True) 
+    
+    runs = 0
+    succeeded = 0
+    failed = 0
+    for item in items:
+        if not filtering or filtering(item):
+            if execute(cmd, normalize(item)):
+                succeeded += 1
+            else:
+                failed += 1
+            runs += 1
+    print('Execution completed (runs: ' + str(runs) + ', succeeded: ' + str(succeeded) + ', failed: ' + str(failed) + ')', flush = True)
     
 if __name__ == "__main__":
     
@@ -123,10 +140,7 @@ if __name__ == "__main__":
     print('Crawling completed', flush = True) 
     
     if args.exec:
-        print('Executing "' + args.exec + '" on all clrawled result', flush = True) 
-        for crawled in result:
-            execute(args.exec, normalize(crawled))
-        print('Execution completed', flush = True)
+        iterate(args.exec, 'all clrawled result', result)
     elif args.fexec:
         files = []
         for crawled in result:
@@ -138,12 +152,6 @@ if __name__ == "__main__":
                 files.append(normalize(crawled))
         if args.filter_files:
             filters = args.filter_files.split(',')
-            print('Executing "' + args.fexec + '" on individual clrawled files that match one of "' + str(filters) + '"', flush = True) 
-            for file in files:
-                if any_match(file, filters):
-                    execute(args.fexec, normalize(file))
+            iterate(args.fexec, 'individual clrawled files that match one of "' + str(filters) + '"', files, lambda item : any_match(item, filters))
         else:
-            print('Executing "' + args.fexec + '" on all individual clrawled files', flush = True) 
-            for file in files:
-                execute(args.fexec, normalize(file))
-        print('Execution completed', flush = True)
+            iterate(args.fexec, 'all individual clrawled files', files)
